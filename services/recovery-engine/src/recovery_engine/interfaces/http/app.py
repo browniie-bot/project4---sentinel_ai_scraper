@@ -10,7 +10,10 @@ processus principal qui n'est pas lui-même un serveur HTTP.
 from fastapi import FastAPI
 from fastapi.responses import Response
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+from opentelemetry.instrumentation.httpx import (
+    HTTPX2ClientInstrumentor,
+    HTTPXClientInstrumentor,
+)
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from sentinel_shared.observability.tracing import setup_tracing
@@ -19,6 +22,8 @@ from sentinel_shared.observability.tracing import setup_tracing
 def create_app() -> FastAPI:
     setup_tracing(service_name="recovery-engine")
     HTTPXClientInstrumentor().instrument()
+    # anthropic 2.x utilise httpx2 : instrumentation séparée pour garder les spans
+    HTTPX2ClientInstrumentor().instrument()
 
     app = FastAPI(
         title="SentinelAI Scraper - Recovery Engine",
